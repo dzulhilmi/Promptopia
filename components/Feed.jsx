@@ -19,10 +19,38 @@ const PromptCardList = ({ data, handleTagClick }) => {
 
 const Feed = () => {
   const [searchText, setSearchText] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+
   const [posts, setPosts] = useState([]);
 
   const handleSearchChange = (e) => {
+    clearTimeout(searchTimeout);
+    setSearchText(e.target.value);
 
+    setSearchTimeout(
+      setTimeout(() => {
+        const searchResult = filterPrompts(e.target.value);
+        setSearchResults(searchResult);
+      }, 500)
+    )
+  }
+
+  const filterPrompts = (searchtext) => {
+    const regex = new RegExp(searchtext, "i");;
+
+    return posts.filter((item) => (
+      regex.test(item.creator.username) ||
+      regex.test(item.tag) || 
+      regex.test(item.prompt)
+    ))
+  }
+
+  const handleTagClick = (tag) => {
+    setSearchText(tag);
+
+    const searchResult = filterPrompts(tag);
+    setSearchResults(searchResult);
   }
 
   useEffect(() => {
@@ -48,8 +76,8 @@ const Feed = () => {
       </form>
 
       <PromptCardList
-        data={posts}
-        handleTagClick={() => {}}
+        data={searchResults.length > 0 ? searchResults : posts}
+        handleTagClick={handleTagClick}
       />
     </section>
   )
